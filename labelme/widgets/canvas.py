@@ -1123,7 +1123,7 @@ class Canvas(QtWidgets.QWidget):
                 if self.adjustingStencilSize:
                     p.drawEllipse(self.stencilSizeAdjustmentStartingPoint[0] - self.tempStencilSize/2, self.stencilSizeAdjustmentStartingPoint[1] - self.tempStencilSize/2, self.tempStencilSize, self.tempStencilSize)
                 else:
-                    p.drawEllipse(self.prevMovePoint.x() - self.contour_editing_radius/2, self.prevMovePoint.y() - self.contour_editing_radius/2, self.contour_editing_radius, self.contour_editing_radius)
+                    p.drawEllipse(int(self.prevMovePoint.x() - self.contour_editing_radius/2), int(self.prevMovePoint.y() - self.contour_editing_radius/2), self.contour_editing_radius, self.contour_editing_radius)
                 if self.contouring:
                     pen = QtGui.QPen(QtGui.QColor(0, 255, 0, 255), self.contour_editing_radius, QtCore.Qt.SolidLine, QtCore.Qt.RoundCap, QtCore.Qt.RoundJoin)
                     p.setPen(pen)

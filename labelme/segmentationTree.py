@@ -69,15 +69,15 @@ def createSegTree(image_filename):
     #         else:
     #             trees.append(new_node)
     # print("in")
-    baseDir = os.getcwd() + "\\"
+    baseDir = os.getcwd() + "/"
     # print(baseDir)
     image_name = os.path.splitext(os.path.split(image_filename)[1])[0]
     # print(baseDir + "segmentation_tree.exe", image_filename, baseDir + "temp\\", image_name)
-    result = subprocess.run([baseDir + "segmentation_tree.exe", image_filename, baseDir + "temp\\", image_name])
+    result = subprocess.run([baseDir + "segmentation_tree.out", image_filename, baseDir + "temp/", image_name])
     # print(result.returncode)
     # print("1")
-    generalDataDir = baseDir + "temp\\"+ image_name + "_GeneralData.bin"
-    boundaryDataDir = baseDir + "temp\\"+ image_name + "_BoundaryData.bin"
+    generalDataDir = baseDir + "temp/"+ image_name + "_GeneralData.bin"
+    boundaryDataDir = baseDir + "temp/"+ image_name + "_BoundaryData.bin"
     # print(generalDataDir, boundaryDataDir)
     regions, num_regions = ReadRegionList(generalDataDir, boundaryDataDir)
 

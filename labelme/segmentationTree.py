@@ -268,26 +268,32 @@ class SegmentationTree(object):
         for child in self.children:
             child.editSegmentSelectionAtContrastLevel(pos, contrastLevel)
 
-    def paintContrastLevel(self, painter, curr_contrast_level, color):
-        if ((self.contrast_level == curr_contrast_level) or self.selected) and self.polygon != None:
-            pen = QtGui.QPen(color)
-            # Try using integer sizes for smoother drawing(?)
-            pen.setWidth(max(1, int(round(2.0 / self.scale))))
-            painter.setPen(pen)
-
-            line_path = QtGui.QPainterPath()
-            line_path.moveTo(QtCore.QPointF(self.getCoords()[0][0],self.getCoords()[0][1]))
-
-            for i, p in enumerate(self.getCoords()):
-                line_path.lineTo(QtCore.QPointF(p[0],p[1]))
-            line_path.lineTo(QtCore.QPointF(self.getCoords()[0][0],self.getCoords()[0][1]))
-
-            painter.drawPath(line_path)
-            if self.hovered or self.selected:
-                painter.fillPath(line_path, color)
+    def paintContrastLevel(self, painter, curr_contrast_level, color) -> bool:
+        childPainted = False
         
         for child in self.children:
-            child.paintContrastLevel(painter, curr_contrast_level, color)
+            childPainted = childPainted or child.paintContrastLevel(painter, curr_contrast_level, color)
+            
+        if ((self.contrast_level == curr_contrast_level) or self.selected) and self.polygon != None and not childPainted:
+            self.drawPolygon(painter,curr_contrast_level,color)
+        
+    
+    def drawPolygon(self, painter, curr_contrast_level, color):
+        pen = QtGui.QPen(color)
+        # Try using integer sizes for smoother drawing(?)
+        pen.setWidth(max(1, int(round(2.0 / self.scale))))
+        painter.setPen(pen)
+
+        line_path = QtGui.QPainterPath()
+        line_path.moveTo(QtCore.QPointF(self.getCoords()[0][0],self.getCoords()[0][1]))
+
+        for i, p in enumerate(self.getCoords()):
+            line_path.lineTo(QtCore.QPointF(p[0],p[1]))
+        line_path.lineTo(QtCore.QPointF(self.getCoords()[0][0],self.getCoords()[0][1]))
+
+        painter.drawPath(line_path)
+        if self.hovered or self.selected:
+            painter.fillPath(line_path, color)
 
     def removeSelection(self):
         self.selected = False
@@ -295,14 +301,21 @@ class SegmentationTree(object):
             child.removeSelection()
 
     def updateHovering(self, pos):
-        if self.polygon.contains(Point(pos)):
-            self.hovered = True
-        else:
-            self.hovered = False
+        self.hovered = False
+        childHovered = False
         
         for child in self.children:
-            child.updateHovering(pos)
-
+            if child.updateHovering(pos):
+                childHovered = True
+            
+        if not childHovered and self.polygon.contains(Point(pos)):
+            self.hovered = True
+        
+        return self.hovered
+    
+    def highlight(self) -> bool:
+        return True
+            
     def collectSelectedSegments(self):
         selectedSegments = []
         if self.selected:

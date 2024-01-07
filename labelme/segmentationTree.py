@@ -10,6 +10,7 @@ from qtpy import QtGui
 
 import subprocess
 import os 
+import shutil
 
 def ReadRegionList(generalDataDir, boundaryDataDir):
     data = np.fromfile(generalDataDir, dtype=np.int32)
@@ -164,6 +165,15 @@ def createSegTree(image_filename):
         
     sortedContrastLevels = list(contrast_levels.keys())
     sortedContrastLevels.sort(reverse=True)
+    
+    # Save segmentation tree images to files
+    
+    dir = 'tree'
+    if os.path.exists(dir):
+        shutil.rmtree(dir)
+    os.makedirs(dir)
+    rootNode.children[0].saveTree(image_filename,dir,"root")
+    
     return rootNode, sortedContrastLevels
 
 class SegmentationTree(object):
@@ -312,9 +322,12 @@ class SegmentationTree(object):
             self.hovered = True
         
         return self.hovered
+        
+        # if self.polygon.contains(Point(pos)):
+        #     self.hovered = True
     
-    def highlight(self) -> bool:
-        return True
+        # for child in self.children:
+        #     child.updateHovering(pos)
             
     def collectSelectedSegments(self):
         selectedSegments = []
@@ -384,3 +397,13 @@ class SegmentationTree(object):
                 if child.selectedSegmentContainsPoint(point):
                     return True
         return False
+    
+    def saveTree(self, imageFilename, directory, fileName):
+        baseImage = cv2.imread(imageFilename)
+        
+        border = np.int32([np.array([[i[0],i[1]] for i in self.getCoords()])])
+        new_img = cv2.polylines(img = baseImage, pts = border, isClosed = True, color = (0,255,0), thickness = 8)
+        cv2.imwrite(f"{directory}/{fileName}.png",new_img)
+        
+        for i,child in enumerate(self.children):
+            child.saveTree(imageFilename,directory,f"{fileName}-{i}")

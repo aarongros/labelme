@@ -172,7 +172,7 @@ def createSegTree(image_filename):
     if os.path.exists(dir):
         shutil.rmtree(dir)
     os.makedirs(dir)
-    rootNode.children[0].saveTree(image_filename,dir,"root")
+    rootNode.children[0].saveTree(image_filename,dir,"root",True)
     
     return rootNode, sortedContrastLevels
 
@@ -398,12 +398,21 @@ class SegmentationTree(object):
                     return True
         return False
     
-    def saveTree(self, imageFilename, directory, fileName):
+    def saveTree(self, imageFilename, directory, fileName, labelImage):
         baseImage = cv2.imread(imageFilename)
         
         border = np.int32([np.array([[i[0],i[1]] for i in self.getCoords()])])
-        new_img = cv2.polylines(img = baseImage, pts = border, isClosed = True, color = (0,255,0), thickness = 8)
+        new_img = cv2.polylines(img=baseImage,pts=border,isClosed=True,color=(0,255,0),thickness=4)
+    
+        if labelImage:
+            # centroid = np.int32(np.asarray(self.polygon.centroid.coords[0]))
+            # centroid = (centroid[0],centroid[1])
+            # print(f"{centroid=}")
+            new_img = cv2.putText(img=new_img,text=f"contrast level = {self.contrast_level}",org=(0,baseImage.shape[0]),
+                                fontFace=cv2.FONT_HERSHEY_SIMPLEX,fontScale=0.75,
+                                color=(255,0,0),thickness=2)
+            
         cv2.imwrite(f"{directory}/{fileName}.png",new_img)
         
         for i,child in enumerate(self.children):
-            child.saveTree(imageFilename,directory,f"{fileName}-{i}")
+            child.saveTree(imageFilename,directory,f"{fileName}-{i}", labelImage)
